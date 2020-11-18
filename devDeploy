@@ -17,10 +17,10 @@ node() {
       echo ">>>>>>>${GIT_COMMIT}"
        }
 
-stage('build') {
-      mtaBuild script: this
-     // step([$class: 'UploadBuild',tenantId: "5ade13625558f2c6688d15ce",revision: "${check.GIT_COMMIT}",appName: "SAP_Build",requestor: "admin",id: "${BUILD_NUMBER}"])
-}
+//stage('build') {
+  //    mtaBuild script: this
+  //   // step([$class: 'UploadBuild',tenantId: "5ade13625558f2c6688d15ce",revision: "${check.GIT_COMMIT}",appName: "SAP_Build",requestor: "admin",id: "${BUILD_NUMBER}"])
+//}
 echo "(*******)"
 stage('Publish Artificats to UCD'){	
   step([$class: 'UCDeployPublisher',
@@ -37,8 +37,8 @@ stage('Publish Artificats to UCD'){
 	                $class: 'com.urbancode.jenkins.plugins.ucdeploy.DeliveryHelper$Push',
 	                pushVersion: '2.0.${BUILD_NUMBER}',
 	                //baseDir: '/var/jenkins_home/workspace/JPetStore/target',
-			 baseDir: 'D:/Installables/Jenkins/workspace/Velocity/Jpetstore/JPetStore-velocity/target/',
-	                fileIncludePatterns: '*.war',
+			 baseDir: '/usar/ucd/temp/',
+	                fileIncludePatterns: '*.*',
 	                fileExcludePatterns: '',
 	               // pushProperties: 'jenkins.server=Jenkins-app\njenkins.reviewed=false',
 	                pushDescription: 'Pushed from Jenkins'
