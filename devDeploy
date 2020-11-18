@@ -21,58 +21,62 @@ stage('build') {
       mtaBuild script: this
      // step([$class: 'UploadBuild',tenantId: "5ade13625558f2c6688d15ce",revision: "${check.GIT_COMMIT}",appName: "SAP_Build",requestor: "admin",id: "${BUILD_NUMBER}"])
 }
+echo "(*******)"
+stage('Publish Artificats to UCD'){	
+  step([$class: 'UCDeployPublisher',
+	        siteName: 'UCD',
+	        component: [
+	            $class: 'com.urbancode.jenkins.plugins.ucdeploy.VersionHelper$VersionBlock',
+	            componentName: 'ABAP',
+	            createComponent: [
+	                $class: 'com.urbancode.jenkins.plugins.ucdeploy.ComponentHelper$CreateComponentBlock',
+	                componentTemplate: '',
+	                componentApplication: 'SAP_ABAP-BE'
+	            ],
+	            delivery: [
+	                $class: 'com.urbancode.jenkins.plugins.ucdeploy.DeliveryHelper$Push',
+	                pushVersion: '2.0.${BUILD_NUMBER}',
+	                //baseDir: '/var/jenkins_home/workspace/JPetStore/target',
+			 baseDir: 'D:/Installables/Jenkins/workspace/Velocity/Jpetstore/JPetStore-velocity/target/',
+	                fileIncludePatterns: '*.war',
+	                fileExcludePatterns: '',
+	               // pushProperties: 'jenkins.server=Jenkins-app\njenkins.reviewed=false',
+	                pushDescription: 'Pushed from Jenkins'
+	            ]
+	        ]
+     ])
+	  
+          echo "(*******)"
+	  echo "Demo1234 ${ABAP_VersionId}"
+	  def newComponentVersionId = "${ABAP_VersionId}"
+	  echo "git commit ${GIT_COMMIT}"
 
- stage ('Upload Build to Accelerate') {
-      step([$class: 'UploadBuild',
-      tenantId: "5ade13625558f2c6688d15ce",
-      revision: "${GIT_COMMIT}",
-      appName: "SAP-Jenkins",
-      requestor: "admin",
-      id: "${majorVersion}",
-      versionName: "${BUILD_NUMBER}"
-    ])
-  }  
-  
-  stage('solmanTrCreate') {
-      transportRequestCreate script:this, changeDocumentId:'8000004988',developmentSystemId: 'SM1~ABAP/001',applicationId: 'HCP'
-  }
-  
-  stage('solmanUpload') {
-      transportRequestUploadFile  script:this, changeDocumentId:'8000004988',developmentSystemId: 'SM1~ABAP/001',applicationId: 'HCP'
-  }
-  
-  stage('neoDeploy') {
-      //checkout scm
-      
-      checkout([$class: 'GitSCM',
-                                   branches: [[name: '*/master']], 
-                                   doGenerateSubmoduleConfigurations: false, 
-                                   extensions: [], submoduleCfg: [], 
-                                   userRemoteConfigs: [[credentialsId: 'ravishankarojha-github-creds',
-                            url: 'https://github.com/ravishankarojha/techED-app.git']]])
-
-      setupCommonPipelineEnvironment script:this
-
-      checkChangeInDevelopment script: this,changeDocumentId:'8000004988'
-    
-      mtaBuild script: this
-      neoDeploy script: this
-      
-      step([$class: 'UploadDeployment',
-          tenantId: "5ade13625558f2c6688d15ce",
-          versionName: "${BUILD_NUMBER}",
-          versionExtId: "${BUILD_NUMBER}",
-          type: 'Jenkins',
-          environmentId: 'fcfa9a42-8c56-42a9-9251-f789a2a069ce',
-          environmentName: 'DEV',
-          appId: '060fc8ae-bb98-40a1-894f-d514e3a6449e',
-          description: 'SAP Deployment',
-          appName: "Jenkins-fiori",
-          initiator: "admin",
-          result: 'true',
-          buildUrl: "${BUILD_URL}"
-      ])
-  
-    
-  } 
+         step($class: 'UploadBuild', 
+         tenantId: "5ade13625558f2c6688d15ce", 
+         revision: "${GIT_COMMIT}", 
+         appName: "SAP_ABAP-BE", 
+         requestor: "admin", 
+         id: "${newComponentVersionId}", 
+         versionName: "2.0.${BUILD_NUMBER}"
+      )
+}
+	stage ('Deploy to DEV') {
+	step([$class: 'UCDeployPublisher',
+		deploy: [ createSnapshot: [deployWithSnapshot: true, 
+			 snapshotName: "2.0.${BUILD_NUMBER}"],
+			 deployApp: 'SAP_ABAP-BE', 
+			 deployDesc: 'Requested from Jenkins', 
+			 deployEnv: 'DEV-ES1001', 
+			 deployOnlyChanged: false, 
+			 deployProc: 'deploy', 
+			 deployReqProps: '', 
+			 deployVersions: "ABAP:2.0.${BUILD_NUMBER}"], 
+		siteName: 'UCD_Local'])
+ }
+	
+stage ('wait for deploy') {
+	sleep 10
+	// echo 'Executing HCL One test ...'
+	//sh '/var/jenkins_home/onetest/hcl-onetest-command.sh'
+ }	
 }
