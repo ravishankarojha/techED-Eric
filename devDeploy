@@ -71,7 +71,7 @@ stage('Publish Artificats to UCD'){
 			 deployProc: 'deploy', 
 			 deployReqProps: '', 
 			 deployVersions: "ABAP:2.0.${BUILD_NUMBER}"], 
-		siteName: 'UCD_Local'])
+		siteName: 'UCD'])
  }
 	
 stage ('wait for deploy') {
