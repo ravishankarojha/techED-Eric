@@ -11,7 +11,7 @@ steps:
   neoDeploy:
    neo: 
     neoCredentialsId: 'NEO_DEPLOY'
-    host: 'hana.ondemand.com'
+    host: 'eu1.hana.ondemand.com'
     account: 'a3e36be73'
     transportRequestUploadFile:
       applicationId: 'HCP'
